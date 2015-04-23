@@ -7,17 +7,9 @@
 
 #define __FI        1                        /* Font index 16x24               */
 
-
-volatile unsigned short lcd_colors[] =
-{ 
-  Black,Navy,DarkGreen,DarkCyan,Maroon,Purple,Olive,
-  LightGrey,DarkGrey,Blue,Green,Cyan,Red,Magenta,Yellow,White
-};
-
 		
 volatile int should_i_plot = 1; // think about it;
 
-		
 typedef int bool;
   #define true 1
   #define false 0
@@ -31,8 +23,13 @@ typedef struct coordinate
 typedef struct shape 
 {
   coordinate coords[4];
+  unsigned short color;
 } shape;
 
+volatile unsigned short lcd_colors[] =
+{ 
+  Yellow,Cyan,Blue,Orange,Purple,Green,Red,Black,White
+};
 
 const coordinate blockCoordArray[] = {{0,0}, {0,1}, {1,0}, {1,1}};
 
@@ -50,7 +47,7 @@ const coordinate Sshape_2CoordArray[] = {{0,1}, {1,1}, {1,0}, {2,0}};
 
 const coordinate* shapeCoordArray[] = {blockCoordArray, lineCoordArray, Lshape_1CoordArray, Lshape_2CoordArray, TshapeCoordArray, Sshape_1CoordArray, Sshape_2CoordArray};
 
-void init_shape(shape* shapeToInit, const coordinate coords[]) //defintion and decleration of init_shape function 
+void init_shape(shape* shapeToInit, const coordinate coords[], unsigned short lcd_color) //defintion and decleration of init_shape function 
 {
   int i = 0;
   for(i = 0; i < 4; i++)
@@ -58,6 +55,7 @@ void init_shape(shape* shapeToInit, const coordinate coords[]) //defintion and d
     shapeToInit->coords[i].col = coords[i].col;
     shapeToInit->coords[i].row = coords[i].row;
   }	
+    shapeToInit->lcd_color;
 }
 
 void render(shape shapeToRender, coordinate position) //definition and decleration of render function 
@@ -170,7 +168,7 @@ int main (void)
 			if(should_i_plot == 1)
 			{
 					
-				init_shape(&myRandomShape, shapeCoordArray[4]);
+				init_shape(&myRandomShape, shapeCoordArray[4], lcd_colors[4]);
 				render(myRandomShape, Position);
 				Position.row = Position.row--;
 				derender(myRandomShape, Position);
@@ -183,7 +181,7 @@ int main (void)
 
 
 // Here, we describe what should be done when the interrupt on Timer 0 is handled;
-// We do that by writing this function, whose address is ìrecordedî in the vector table
+// We do that by writing this function, whose address is ‚Äúrecorded‚Äù in the vector table
 // from file startup_LPC17xx.s under the name TIMER0_IRQHandler;
 void TIMER0_IRQHandler(void)
 {
