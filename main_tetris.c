@@ -32,6 +32,7 @@ bool landed[21][10] ={{0,0,0,0,0,0,0,0,0,0},
 											{0,0,0,0,0,0,0,0,0,0},
 											{0,0,0,0,0,0,0,0,0,0}}; 
 int p = 5;
+
 		
 volatile unsigned short lcd_colors[] =
 { 
@@ -84,7 +85,7 @@ void init_shape(shape* shapeToInit, const coordinate coords[], unsigned short co
     shapeToInit->coords[i].row = coords[i].row;
     
   }
-	  
+
 }
 
 void render(shape shapeToRender, coordinate position) //definition and decleration of render function 
@@ -97,8 +98,9 @@ void render(shape shapeToRender, coordinate position) //definition and declerati
     int y = shapeToRender.coords[z].row + position.row;
     x = x*16;
     y = y*16;
-		GLCD_SetTextColor(shapeToRender.color);
-    GLCD_Bargraph (y, x, 16, 16, 1024);
+		
+	GLCD_SetTextColor(shapeToRender.color);
+	GLCD_Bargraph (y, x, 16, 16, 1024);
   
   }
 }
@@ -112,7 +114,7 @@ void derender(shape shapeToRender, coordinate position) //definition and declera
     int y = shapeToRender.coords[z].row + position.row + 1;
     x = x*16;
     y = y*16;
-		GLCD_SetTextColor(Black);
+	GLCD_SetTextColor(Black);
     GLCD_Bargraph (y, x, 16, 16, 1024);
   
   }
@@ -126,6 +128,7 @@ bool checkIfCanFall(shape current_Shape, coordinate position) //definition and d
   {
     int x = current_Shape.coords[z].col + position.col;
     int y = current_Shape.coords[z].row + position.row - 1;  
+
       if (landed[y][x] == 0)
       {      
         q = q + 1;
@@ -143,6 +146,7 @@ shape myRandomShape;
 int randomNumber; 	
 int i;
 coordinate Position = {4,18};
+
 		 
 int main (void) 
 {
@@ -193,41 +197,41 @@ void TIMER0_IRQHandler(void)
 {
 		int z = 0;
     if ( (LPC_TIM0->IR & 0x01) == 0x01 ) // if MR0 interrupt 
-			{
-				
+		{
+
         LPC_TIM0->IR |= 1 << 0; // Clear MR0 interrupt flag 
         // toggle the P0.29 LED;
         LPC_GPIO1->FIOPIN ^= 1 << 29; 
         // what does it do?
         should_i_plot = 1;
-				
-					
-					init_shape(&myRandomShape, shapeCoordArray[p], lcd_colors[p]);	 
-					render(myRandomShape, Position);
-						if( checkIfCanFall(myRandomShape, Position) == true )
-							{	
-								Position.row = Position.row--;
-								derender(myRandomShape, Position);
-								render(myRandomShape, Position);
-							}
-						else 
-							{
-								landed[Position.row][Position.col] = true;
+			init_shape(&myRandomShape, shapeCoordArray[p], lcd_colors[p]);	 
+			render(myRandomShape, Position);
+			if (checkIfCanFall(myRandomShape, Position) == true ) 
+			{	
+				Position.row = Position.row--;
+				derender(myRandomShape, Position);
+				render(myRandomShape, Position);
+			} 
+			else 
+			{
+				landed[Position.row][Position.col] = true;
 									
-									for(z = 0; z < 4; z++)
-									{
-										int x = myRandomShape.coords[z].col + Position.col;
-										int y = myRandomShape.coords[z].row + Position.row;
-										landed[y][x] = true;
-										p = rand() % 7;
-									}
-								Position.row = 18;
-								Position.col = 4;
-									if()
-									{
-									}
-							}
-				
+				for(z = 0; z < 4; z++)
+				{
+					int x = myRandomShape.coords[z].col + Position.col;
+					int y = myRandomShape.coords[z].row + Position.row;
+					landed[y][x] = true;
+					p = rand() % 7;
+				}
+				Position.row = 18;
+				Position.col = 4;
+				if()
+				{
+									
+				}
 			}
+				
+
+		}
 	}
 
