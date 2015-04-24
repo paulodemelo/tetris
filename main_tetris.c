@@ -6,21 +6,44 @@
 #include "CRIS_UTILS.h"
 
 #define __FI        1                        /* Font index 16x24               */
-
-
+typedef int bool;
+  #define true 1
+  #define false 0
+		
+bool landed[21][10] ={{0,0,0,0,0,0,0,0,0,0},
+											{0,0,0,0,0,0,0,0,0,0},
+											{0,0,0,0,0,0,0,0,0,0},
+											{0,0,0,0,0,0,0,0,0,0},
+											{0,0,0,0,0,0,0,0,0,0},
+											{0,0,0,0,0,0,0,0,0,0},
+											{0,0,0,0,0,0,0,0,0,0},
+											{0,0,0,0,0,0,0,0,0,0},
+											{0,0,0,0,0,0,0,0,0,0},
+											{0,0,0,0,0,0,0,0,0,0},
+											{0,0,0,0,0,0,0,0,0,0},
+											{0,0,0,0,0,0,0,0,0,0},
+											{0,0,0,0,0,0,0,0,0,0},
+											{0,0,0,0,0,0,0,0,0,0},
+											{0,0,0,0,0,0,0,0,0,0},
+											{0,0,0,0,0,0,0,0,0,0},
+											{0,0,0,0,0,0,0,0,0,0},
+											{0,0,0,0,0,0,0,0,0,0},
+											{0,0,0,0,0,0,0,0,0,0},
+											{0,0,0,0,0,0,0,0,0,0},
+											{0,0,0,0,0,0,0,0,0,0}}; 
+int p = 5;
+		
 volatile unsigned short lcd_colors[] =
 { 
-  Black,Navy,DarkGreen,DarkCyan,Maroon,Purple,Olive,
-  LightGrey,DarkGrey,Blue,Green,Cyan,Red,Magenta,Yellow,White
+  Yellow, Cyan, Blue, Orange, Purple, Green, Red, Black, White
+
 };
 
 		
 volatile int should_i_plot = 1; // think about it;
 
 		
-typedef int bool;
-  #define true 1
-  #define false 0
+
 
 typedef struct coordinate 
 {
@@ -31,6 +54,7 @@ typedef struct coordinate
 typedef struct shape 
 {
   coordinate coords[4];
+  unsigned short color; 
 } shape;
 
 
@@ -50,14 +74,17 @@ const coordinate Sshape_2CoordArray[] = {{0,1}, {1,1}, {1,0}, {2,0}};
 
 const coordinate* shapeCoordArray[] = {blockCoordArray, lineCoordArray, Lshape_1CoordArray, Lshape_2CoordArray, TshapeCoordArray, Sshape_1CoordArray, Sshape_2CoordArray};
 
-void init_shape(shape* shapeToInit, const coordinate coords[]) //defintion and decleration of init_shape function 
+void init_shape(shape* shapeToInit, const coordinate coords[], unsigned short color) //defintion and decleration of init_shape function 
 {
   int i = 0;
+	shapeToInit->color = color;
   for(i = 0; i < 4; i++)
   {
     shapeToInit->coords[i].col = coords[i].col;
     shapeToInit->coords[i].row = coords[i].row;
-  }	
+    
+  }
+	  
 }
 
 void render(shape shapeToRender, coordinate position) //definition and decleration of render function 
@@ -68,9 +95,9 @@ void render(shape shapeToRender, coordinate position) //definition and declerati
     
     int x = shapeToRender.coords[z].col + position.col;
     int y = shapeToRender.coords[z].row + position.row;
-    x = x*16 - 8;
-    y = y*16 - 8;
-		GLCD_SetTextColor(Black);
+    x = x*16;
+    y = y*16;
+		GLCD_SetTextColor(shapeToRender.color);
     GLCD_Bargraph (y, x, 16, 16, 1024);
   
   }
@@ -82,26 +109,27 @@ void derender(shape shapeToRender, coordinate position) //definition and declera
   {
     
     int x = shapeToRender.coords[z].col + position.col;
-    int y = shapeToRender.coords[z].row + position.row;
-    x = x*16 - 8;
-    y = y*16 - 8;
-		GLCD_SetTextColor(Green);
+    int y = shapeToRender.coords[z].row + position.row + 1;
+    x = x*16;
+    y = y*16;
+		GLCD_SetTextColor(Black);
     GLCD_Bargraph (y, x, 16, 16, 1024);
   
   }
 }
 
-bool checkIfCanFall(shape current_Shape, coordinate position, bool** landed) //definition and decleration of checkIfCanFalll function 
+bool checkIfCanFall(shape current_Shape, coordinate position) //definition and decleration of checkIfCanFalll function 
 {
   int q = 0;
   int z = 0;
   for(z = 0; z < 4; z++)
   {
     int x = current_Shape.coords[z].col + position.col;
-    int y = current_Shape.coords[z].row + position.row + 1;  
+    int y = current_Shape.coords[z].row + position.row - 1;  
       if (landed[y][x] == 0)
       {      
         q = q + 1;
+				
       }
   }
 
@@ -110,34 +138,17 @@ bool checkIfCanFall(shape current_Shape, coordinate position, bool** landed) //d
   else
     return false;
 }
-	int landed[20][10] = {{0,0,0,0,0,0,0,0,0,0},
-										    {0,0,0,0,0,0,0,0,0,0},
-											  {0,0,0,0,0,0,0,0,0,0},
-												{0,0,0,0,0,0,0,0,0,0},
-												{0,0,0,0,0,0,0,0,0,0},
-												{0,0,0,0,0,0,0,0,0,0},
-												{0,0,0,0,0,0,0,0,0,0},
-												{0,0,0,0,0,0,0,0,0,0},
-												{0,0,0,0,0,0,0,0,0,0},
-												{0,0,0,0,0,0,0,0,0,0},
-												{0,0,0,0,0,0,0,0,0,0},
-												{0,0,0,0,0,0,0,0,0,0},
-												{0,0,0,0,0,0,0,0,0,0},
-												{0,0,0,0,0,0,0,0,0,0},
-												{0,0,0,0,0,0,0,0,0,0},
-												{0,0,0,0,0,0,0,0,0,0},
-												{0,0,0,0,0,0,0,0,0,0},
-												{0,0,0,0,0,0,0,0,0,0},
-												{0,0,0,0,0,0,0,0,0,0},
-												{0,0,0,0,0,0,0,0,0,0}}; 
+
+shape myRandomShape;
+int randomNumber; 	
+int i;
+coordinate Position = {4,18};
 		 
 int main (void) 
 {
 	
-  	shape myRandomShape;
-  	int randomNumber;
-  	int i;
-  	coordinate Position = {4,18}; 
+
+  	
     // (0) Initializations of GLCD and SER;
     //SER_Init();                              /* UART Initialization           */
     GLCD_Init();                             /* Initialize graphical LCD      */
@@ -148,7 +159,7 @@ int main (void)
     // (1) Timer 0 configuration 
     LPC_SC->PCONP |= 1 << 1; // Power up Timer 0 
     LPC_SC->PCLKSEL0 |= 1 << 2; // Clock for timer = CCLK, i.e., CPU Clock (
-    LPC_TIM0->MR0 = 1 << 26; // 24: give a value suitable for the LED blinking 
+    LPC_TIM0->MR0 = 1 << 24; // 24: give a value suitable for the LED blinking 
                              // frequency based on the clock frequency 
     LPC_TIM0->MCR |= 1 << 0; // Interrupt on Match 0 compare 
     LPC_TIM0->MCR |= 1 << 1; // Reset timer on Match 0    
@@ -162,23 +173,16 @@ int main (void)
     LPC_TIM0->TCR |= 1 << 0; // Start timer 
     LPC_SC->PCONP |= ( 1 << 15 ); // Power up GPIO 
     LPC_GPIO1->FIODIR |= 1 << 29; // Put P1.29 into output mode. LED is connected to P1.29
+		
 		CRIS_draw_line( 0, 160, 320, 160);
 		while(1)
 		{
-			
-				
-			if(should_i_plot == 1)
-			{
-					
-				init_shape(&myRandomShape, shapeCoordArray[4]);
-				render(myRandomShape, Position);
-				Position.row = Position.row--;
-				derender(myRandomShape, Position);
-			}
-			
-			should_i_plot = 0; 	
-		}
-
+		
+		
+	
+		
+	}
+	
 }//end main
 
 
@@ -187,12 +191,43 @@ int main (void)
 // from file startup_LPC17xx.s under the name TIMER0_IRQHandler;
 void TIMER0_IRQHandler(void)
 {
+		int z = 0;
     if ( (LPC_TIM0->IR & 0x01) == 0x01 ) // if MR0 interrupt 
-    {
+			{
+				
         LPC_TIM0->IR |= 1 << 0; // Clear MR0 interrupt flag 
         // toggle the P0.29 LED;
         LPC_GPIO1->FIOPIN ^= 1 << 29; 
         // what does it do?
         should_i_plot = 1;
-    }
-}
+				
+					
+					init_shape(&myRandomShape, shapeCoordArray[p], lcd_colors[p]);	 
+					render(myRandomShape, Position);
+						if( checkIfCanFall(myRandomShape, Position) == true )
+							{	
+								Position.row = Position.row--;
+								derender(myRandomShape, Position);
+								render(myRandomShape, Position);
+							}
+						else 
+							{
+								landed[Position.row][Position.col] = true;
+									
+									for(z = 0; z < 4; z++)
+									{
+										int x = myRandomShape.coords[z].col + Position.col;
+										int y = myRandomShape.coords[z].row + Position.row;
+										landed[y][x] = true;
+										p = rand() % 7;
+									}
+								Position.row = 18;
+								Position.col = 4;
+									if()
+									{
+									}
+							}
+				
+			}
+	}
+
