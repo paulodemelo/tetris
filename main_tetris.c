@@ -39,12 +39,8 @@ volatile unsigned short lcd_colors[] =
   Yellow, Cyan, Blue, Orange, Purple, Green, Red, Black, White
 
 };
-
 		
 volatile int should_i_plot = 1; // think about it;
-
-		
-
 
 typedef struct coordinate 
 {
@@ -65,7 +61,7 @@ const coordinate lineCoordArray[] = {{0,1}, {1,1}, {2,1}, {3,1}};
 
 const coordinate Lshape_1CoordArray[] = {{0,1}, {0,0}, {1,1}, {2,1}};
 
-const coordinate Lshape_2CoordArray[] = {{0,1}, {0,0}, {1,0}, {2,0}};
+const coordinate Lshape_2CoordArray[] = {{0,1}, {1,1}, {2,1}, {2,0}};
 
 const coordinate TshapeCoordArray[] = {{0,1}, {1,1}, {1,0}, {2,1}};
 
@@ -87,6 +83,12 @@ void init_shape(shape* shapeToInit, const coordinate coords[], unsigned short co
   }
 
 }
+void init_random_shape(shape* nextRandomShape)
+{
+  int x = rand() % 7;
+	init_shape(nextRandomShape, shapeCoordArray[x], lcd_colors[x]);
+
+}
 
 void render(shape shapeToRender, coordinate position) //definition and decleration of render function 
 {
@@ -100,7 +102,7 @@ void render(shape shapeToRender, coordinate position) //definition and declerati
     y = y*16;
 		
 	GLCD_SetTextColor(shapeToRender.color);
-	GLCD_Bargraph (y, x, 16, 16, 1024);
+	GLCD_Bargraph (y, x, 15, 15, 1024);
   
   }
 }
@@ -114,11 +116,23 @@ void derender(shape shapeToRender, coordinate position) //definition and declera
     int y = shapeToRender.coords[z].row + position.row + 1;
     x = x*16;
     y = y*16;
-	GLCD_SetTextColor(Black);
-    GLCD_Bargraph (y, x, 16, 16, 1024);
+		GLCD_SetTextColor(Black);
+    GLCD_Bargraph (y, x, 15, 15, 1024);
   
   }
 }
+void clearNextDisplay()
+{
+	int x = 11*16;
+	int y = 17*16;
+	GLCD_SetTextColor(Black);
+	GLCD_Bargraph (y, x, 32, 16, 1024);
+	GLCD_Bargraph (y, x+16, 32, 16, 1024);
+	GLCD_Bargraph (y, x+32, 32, 16, 1024);
+	GLCD_Bargraph (y, x+48, 32, 16, 1024);
+	
+}
+
 
 bool checkIfCanFall(shape current_Shape, coordinate position) //definition and decleration of checkIfCanFalll function 
 {
@@ -142,12 +156,13 @@ bool checkIfCanFall(shape current_Shape, coordinate position) //definition and d
     return false;
 }
 
-shape myRandomShape;
-int randomNumber; 	
+shape fallingShape;
+shape nextShape;	
 int i;
-coordinate Position = {4,18};
+const coordinate startingPosition = {4,18};
+const coordinate positionOfNextDisplay = {11,17};
+coordinate positionOfFallingPiece = {4,18}; 
 
-		 
 int main (void) 
 {
 	
@@ -179,13 +194,15 @@ int main (void)
     LPC_GPIO1->FIODIR |= 1 << 29; // Put P1.29 into output mode. LED is connected to P1.29
 		
 		CRIS_draw_line( 0, 160, 320, 160);
+		init_random_shape(&nextShape);
+		init_random_shape(&fallingShape);
 		while(1)
 		{
 		
 		
 	
 		
-	}
+		}
 	
 }//end main
 
@@ -196,42 +213,46 @@ int main (void)
 void TIMER0_IRQHandler(void)
 {
 		int z = 0;
+	  int h = 0;
+		unsigned char s[] = "GAME OVER";
     if ( (LPC_TIM0->IR & 0x01) == 0x01 ) // if MR0 interrupt 
 		{
-
         LPC_TIM0->IR |= 1 << 0; // Clear MR0 interrupt flag 
         // toggle the P0.29 LED;
         LPC_GPIO1->FIOPIN ^= 1 << 29; 
         // what does it do?
         should_i_plot = 1;
-			init_shape(&myRandomShape, shapeCoordArray[p], lcd_colors[p]);	 
-			render(myRandomShape, Position);
-			if (checkIfCanFall(myRandomShape, Position) == true ) 
+      render(nextShape, positionOfNextDisplay); 
+			render(fallingShape, positionOfFallingPiece);
+			if (checkIfCanFall(fallingShape, positionOfFallingPiece)) 
 			{	
-				Position.row = Position.row--;
-				derender(myRandomShape, Position);
-				render(myRandomShape, Position);
+				positionOfFallingPiece.row = positionOfFallingPiece.row--;
+				derender(fallingShape, positionOfFallingPiece);
+				render(fallingShape, positionOfFallingPiece);
 			} 
 			else 
-			{
-				landed[Position.row][Position.col] = true;
-									
+			{					
 				for(z = 0; z < 4; z++)
 				{
-					int x = myRandomShape.coords[z].col + Position.col;
-					int y = myRandomShape.coords[z].row + Position.row;
+					int x = fallingShape.coords[z].col + positionOfFallingPiece.col;
+					int y = fallingShape.coords[z].row + positionOfFallingPiece.row;
 					landed[y][x] = true;
-					p = rand() % 7;
 				}
-				Position.row = 18;
-				Position.col = 4;
-				if()
+				clearNextDisplay();
+				positionOfFallingPiece = startingPosition;
+				fallingShape = nextShape;
+				init_random_shape(&nextShape);
+				for( h = 0; h < 10; h++)
 				{
-									
+					if (landed[19][h] == true)
+					{ 
+						GLCD_DisplayString  (160, 320, s);
+						exit(1);
+					}
 				}
 			}
 				
 
 		}
-	}
+}
 
