@@ -382,12 +382,13 @@ void TIMER0_IRQHandler(void)
 				}
 				for(row = 0; row < 20; row++)
 				{
-						if(landed[row][0] < 0 && landed[row][0] < 0 
-							&& landed[row][0] < 0 && landed[row][0] < 0 
-							&& landed[row][0] < 0 && landed[row][0] < 0 
-							&& landed[row][0] < 0	&& landed[row][0] < 0 
-							&& landed[row][0] < 0	&& landed[row][0] < 0 )
+						if(landed[row][0] > 0 && landed[row][1] > 0 
+							&& landed[row][2] > 0 && landed[row][3] > 0 
+							&& landed[row][4] > 0 && landed[row][5] > 0 
+							&& landed[row][6] > 0	&& landed[row][7] > 0 
+							&& landed[row][8] > 0	&& landed[row][9] > 0 )
 						{
+						exit(1);
 						}
 						
 				}
